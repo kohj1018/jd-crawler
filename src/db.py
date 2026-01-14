@@ -25,9 +25,18 @@ def update_target_checked(client: Client, target_id: int) -> None:
 
 
 def update_target_hash(client: Client, target_id: int, new_hash: str) -> None:
-    """Update last_list_hash and last_checked_at for a target."""
+    """Update last_list_hash, last_checked_at, and clear last_error for a target."""
     client.table("crawl_targets").update({
         "last_list_hash": new_hash,
+        "last_checked_at": datetime.now(timezone.utc).isoformat(),
+        "last_error": None,
+    }).eq("id", target_id).execute()
+
+
+def update_target_error(client: Client, target_id: int, error_msg: str) -> None:
+    """Update last_error and last_checked_at for a target."""
+    client.table("crawl_targets").update({
+        "last_error": error_msg,
         "last_checked_at": datetime.now(timezone.utc).isoformat()
     }).eq("id", target_id).execute()
 
@@ -51,8 +60,6 @@ def upsert_job_posting(
         .execute()
     )
 
-    now = datetime.now(timezone.utc).isoformat()
-
     if existing.data:
         old_content = existing.data[0].get("content_raw", "")
         if old_content == content_raw:
@@ -62,18 +69,14 @@ def upsert_job_posting(
             "title": title,
             "company_name": company_name,
             "content_raw": content_raw,
-            "updated_at": now,
         }).eq("original_url", original_url).execute()
         return "UPDATED"
     else:
         client.table("job_postings").insert({
-            "crawl_target_id": target_id,
             "title": title,
             "company_name": company_name,
             "content_raw": content_raw,
             "original_url": original_url,
             "analysis_result": None,
-            "created_at": now,
-            "updated_at": now,
         }).execute()
         return "NEW"

@@ -40,11 +40,12 @@ def main() -> int:
         print(f"[FATAL] Failed to fetch crawl targets: {e}")
         return 1
 
-    if not targets:
-        print("[INFO] No active crawl targets found.")
-        return 0
+    print(f"[INFO] Active crawl targets: {len(targets)}")
 
-    print(f"[INFO] Found {len(targets)} active target(s)")
+    if not targets:
+        print("[INFO] No records found in crawl_targets where is_active=true")
+        print("[HINT] Run: python scripts/seed_crawl_targets.py")
+        return 0
     print("-" * 60)
 
     # Crawl all targets

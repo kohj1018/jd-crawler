@@ -144,3 +144,68 @@ class WantedParser(BaseParser):
 from src.parsers.wanted import WantedParser
 PARSER_REGISTRY["wanted"] = WantedParser
 ```
+
+## Toss API 파서
+
+Toss 채용공고는 API 기반 파서(`toss_job_groups_api`)를 사용.
+
+### Target 추가
+
+```sql
+-- crawl_targets에 last_error 컬럼이 없으면 추가
+ALTER TABLE crawl_targets ADD COLUMN IF NOT EXISTS last_error TEXT;
+
+-- Toss target 추가
+INSERT INTO crawl_targets (name, list_url, parser_type, is_active)
+VALUES (
+  'Toss Jobs',
+  'https://api-public.toss.im/api/v3/ipd-eggnog/career/job-groups',
+  'toss_job_groups_api',
+  true
+);
+```
+
+### 로컬 테스트 순서
+
+```bash
+# 1) API fetch 테스트 (DB 없이)
+python scripts/test_toss_fetch.py
+
+# 2) Supabase upsert 테스트
+python scripts/test_toss_upsert.py
+
+# 3) 메인 크롤러로 실행 (변경 감지 포함)
+python -m src.main
+
+# 4) 바로 다시 실행하면 SKIP 확인
+python -m src.main
+# → "[SKIP] No changes detected for Toss Jobs (unchanged)"
+```
+
+### 변경 감지 동작
+
+- API 응답에서 `(job.id, job.updated_at)` 쌍을 정렬 후 SHA256 해시 생성
+- `crawl_targets.last_list_hash`와 비교
+- 같으면: upsert 스킵, `last_checked_at`만 업데이트
+- 다르면: upsert 수행 후 `last_list_hash`, `last_checked_at` 업데이트, `last_error` = null
+- 실패 시: `last_error`에 에러 메시지 저장
+
+### DB 제약 조건 확인
+
+`job_postings.original_url`에 UNIQUE 제약이 필수. 없으면 upsert 실패:
+
+```
+ERROR: there is no unique or exclusion constraint matching the ON CONFLICT specification
+```
+
+수정 SQL:
+```sql
+-- UNIQUE 제약 추가
+ALTER TABLE job_postings
+ADD CONSTRAINT job_postings_original_url_key UNIQUE (original_url);
+
+-- 확인
+SELECT constraint_name, constraint_type
+FROM information_schema.table_constraints
+WHERE table_name = 'job_postings' AND constraint_type = 'UNIQUE';
+```

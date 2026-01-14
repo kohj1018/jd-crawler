@@ -1,10 +1,15 @@
 from src.parsers.base import BaseParser, JobItem
 from src.parsers.generic import GenericParser
 
-# Parser registry: maps parser_type to parser class
+# Parser registry: maps parser_type to parser class (HTML-based parsers)
 PARSER_REGISTRY: dict[str, type[BaseParser]] = {
     "generic": GenericParser,
 }
+
+# API-based parsers are handled separately in crawler.py
+# They don't inherit from BaseParser since they have their own crawling logic.
+# Currently supported API parser types:
+#   - "toss_job_groups_api": Toss job groups API (src/parsers/toss_job_groups_api.py)
 
 
 def get_parser(parser_type: str, config: dict | None = None) -> BaseParser:

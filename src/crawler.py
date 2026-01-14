@@ -13,6 +13,10 @@ from src.db import (
 )
 from src.parsers import get_parser
 from src.parsers.base import JobItem
+from src.parsers.toss_job_groups_api import crawl_toss_api
+
+# Parser types that use API-based crawling instead of HTML parsing
+API_PARSER_TYPES = {"toss_job_groups_api"}
 
 
 @retry(
@@ -56,12 +60,18 @@ def crawl_target(client: Client, target: dict[str, Any]) -> dict[str, int]:
     Returns:
         Stats dict with counts for NEW, UPDATED, SKIP, ERROR
     """
+    parser_type = target.get("parser_type", "generic")
+
+    # Dispatch to API-based crawlers
+    if parser_type in API_PARSER_TYPES:
+        if parser_type == "toss_job_groups_api":
+            return crawl_toss_api(client, target)
+
     stats = {"NEW": 0, "UPDATED": 0, "SKIP": 0, "ERROR": 0}
 
     target_id = target["id"]
     target_name = target.get("name", f"target_{target_id}")
     list_url = target["list_url"]
-    parser_type = target.get("parser_type", "generic")
     parser_config = target.get("parser_config") or {}
     last_list_hash = target.get("last_list_hash")
 
