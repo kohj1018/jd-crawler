@@ -1,6 +1,29 @@
 {
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:about.daangn.com)",
+      "WebFetch(domain:careers.kakao.com)",
+      "WebFetch(domain:boards-api.greenhouse.io)",
+      "WebSearch",
+      "WebFetch(domain:kakaopay.career.greetinghr.com)",
+      "WebFetch(domain:career.kakaostyle.com)",
+      "WebFetch(domain:recruit.kakaobank.com)",
+      "WebFetch(domain:careers.kakaoenterprise.com)",
+      "WebFetch(domain:kakaoent.com)",
+      "WebFetch(domain:career.kakaopaysec.com)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(python:*)",
+      "Bash(for part in \"\" \"TECHNOLOGY\" \"STAFF\" \"DESIGN\")",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Bash(done)",
+      "Bash(__NEW_LINE_64abf0ae7428feaa__ python -c \"\nimport json, sys\nsys.stdout.reconfigure\\(encoding=''utf-8''\\)\nwith open\\(r''C:\\\\Users\\\\kbwdesktop\\\\Desktop\\\\dev\\\\jd-crawler\\\\tmp_kakao_detail.json'', ''r'', encoding=''utf-8''\\) as f:\n    data = json.load\\(f\\)\nprint\\(''Keys:'', list\\(data.keys\\(\\)\\) if isinstance\\(data, dict\\) else ''Not a dict''\\)\nif isinstance\\(data, dict\\):\n    for k, v in data.items\\(\\):\n        val_repr = repr\\(v\\)\n        if len\\(val_repr\\) > 150:\n            val_repr = val_repr[:150] + ''...''\n        print\\(f''  {k}: {type\\(v\\).__name__} = {val_repr}''\\)\n\")",
+      "Bash(__NEW_LINE_5c6cf022ee4c8b85__ python -c \"\nimport json, sys\nsys.stdout.reconfigure\\(encoding=''utf-8''\\)\nwith open\\(r''C:\\\\Users\\\\kbwdesktop\\\\Desktop\\\\dev\\\\jd-crawler\\\\tmp_kakao_attr.json'', ''r'', encoding=''utf-8''\\) as f:\n    data = json.load\\(f\\)\nprint\\(json.dumps\\(data, ensure_ascii=False, indent=2\\)[:3000]\\)\n\")"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "supabase"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

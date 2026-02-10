@@ -14,9 +14,11 @@ from src.db import (
 from src.parsers import get_parser
 from src.parsers.base import JobItem
 from src.parsers.toss_job_groups_api import crawl_toss_api
+from src.parsers.daangn_greenhouse_api import crawl_daangn_api
+from src.parsers.kakao_api import crawl_kakao_api
 
 # Parser types that use API-based crawling instead of HTML parsing
-API_PARSER_TYPES = {"toss_job_groups_api"}
+API_PARSER_TYPES = {"toss_job_groups_api", "daangn_greenhouse_api", "kakao_api"}
 
 
 @retry(
@@ -66,6 +68,10 @@ def crawl_target(client: Client, target: dict[str, Any]) -> dict[str, int]:
     if parser_type in API_PARSER_TYPES:
         if parser_type == "toss_job_groups_api":
             return crawl_toss_api(client, target)
+        elif parser_type == "daangn_greenhouse_api":
+            return crawl_daangn_api(client, target)
+        elif parser_type == "kakao_api":
+            return crawl_kakao_api(client, target)
 
     stats = {"NEW": 0, "UPDATED": 0, "SKIP": 0, "ERROR": 0}
 

@@ -25,7 +25,7 @@ if not SUPABASE_URL or not SUPABASE_SECRET_KEY:
     print("[ERROR] Missing SUPABASE_URL or SUPABASE_SECRET_KEY in environment")
     sys.exit(1)
 
-# Toss target configuration
+# Target configurations
 TOSS_TARGET = {
     "company_name": "Toss",
     "list_url": "https://api-public.toss.im/api/v3/ipd-eggnog/career/job-groups",
@@ -36,6 +36,55 @@ TOSS_TARGET = {
     "last_error": None,
 }
 
+DAANGN_TARGET = {
+    "company_name": "Daangn",
+    "list_url": "https://boards-api.greenhouse.io/v1/boards/daangn/jobs?content=true",
+    "parser_type": "daangn_greenhouse_api",
+    "is_active": True,
+    "last_list_hash": None,
+    "last_checked_at": None,
+    "last_error": None,
+}
+
+KAKAO_TARGET = {
+    "company_name": "Kakao",
+    "list_url": "https://careers.kakao.com/public/api/job-list",
+    "parser_type": "kakao_api",
+    "is_active": True,
+    "last_list_hash": None,
+    "last_checked_at": None,
+    "last_error": None,
+}
+
+
+ALL_TARGETS = [
+    ("Toss", TOSS_TARGET),
+    ("Daangn", DAANGN_TARGET),
+    ("Kakao", KAKAO_TARGET),
+]
+
+
+def seed_target(sb, name: str, target: dict):
+    """Seed a single crawl target if it doesn't already exist."""
+    existing = (
+        sb.table("crawl_targets")
+        .select("id")
+        .eq("company_name", target["company_name"])
+        .eq("parser_type", target["parser_type"])
+        .execute()
+    )
+
+    if existing.data:
+        print(f"[SKIP] {name} target already exists (id={existing.data[0]['id']})")
+        return
+
+    result = sb.table("crawl_targets").insert(target).execute()
+
+    if result.data:
+        print(f"[OK] {name} target inserted (id={result.data[0]['id']})")
+    else:
+        print(f"[OK] {name} target inserted")
+
 
 def main():
     print(f"[INFO] Supabase URL: {SUPABASE_URL}")
@@ -44,26 +93,8 @@ def main():
     try:
         sb = create_client(SUPABASE_URL, SUPABASE_SECRET_KEY)
 
-        # Check if Toss target already exists
-        existing = (
-            sb.table("crawl_targets")
-            .select("id")
-            .eq("company_name", TOSS_TARGET["company_name"])
-            .eq("parser_type", TOSS_TARGET["parser_type"])
-            .execute()
-        )
-
-        if existing.data:
-            print(f"[SKIP] Toss target already exists (id={existing.data[0]['id']})")
-            return
-
-        # Insert new target
-        result = sb.table("crawl_targets").insert(TOSS_TARGET).execute()
-
-        if result.data:
-            print(f"[OK] Toss target inserted (id={result.data[0]['id']})")
-        else:
-            print("[OK] Toss target inserted")
+        for name, target in ALL_TARGETS:
+            seed_target(sb, name, target)
 
     except Exception as e:
         print(f"[ERROR] Failed to seed crawl_targets: {e}")

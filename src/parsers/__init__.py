@@ -10,6 +10,8 @@ PARSER_REGISTRY: dict[str, type[BaseParser]] = {
 # They don't inherit from BaseParser since they have their own crawling logic.
 # Currently supported API parser types:
 #   - "toss_job_groups_api": Toss job groups API (src/parsers/toss_job_groups_api.py)
+#   - "daangn_greenhouse_api": Daangn Greenhouse API (src/parsers/daangn_greenhouse_api.py)
+#   - "kakao_api": Kakao careers API (src/parsers/kakao_api.py)
 
 
 def get_parser(parser_type: str, config: dict | None = None) -> BaseParser:
